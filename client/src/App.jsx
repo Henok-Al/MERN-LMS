@@ -1,12 +1,12 @@
+import { Route, Routes } from "react-router-dom";
 import "./App.css";
-import { Button } from "./components/ui/button";
+import AuthPage from "./pages/auth";
 
 function App() {
   return (
-    <>
-      <h1 className="text-bold bg-amber-500">THis is lms project</h1>
-      <Button>Login</Button>
-    </>
+    <Routes>
+      <Route path="/auth" element={<AuthPage />} />
+    </Routes>
   );
 }
 

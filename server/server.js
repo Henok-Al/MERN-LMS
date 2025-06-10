@@ -1,23 +1,18 @@
 import "dotenv/config";
-import express from 'express';
-import cors from 'cors';
-import connectDB from './database/db.js';
-import authRoute from './routes/auth-routes/index.js';
+import express from "express";
+import connectDB from "./database/db.js";
+import authRoute from "./routes/instructor-routes/course-route.js";
+import instructorRoute from "./routes/instructor-routes/course-route.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-cors({
-  origin: process.env.CLIENT_URL,
-  methods: ["GET", "POST", "DELETE", "PUT"],
-  allowededHeaders: ["Content-type", "Authorization"],
-});
+//database connection
+connectDB();
 
 app.use(express.json());
 app.use("/auth", authRoute);
-
-//database connection
-connectDB();
+app.use("/instructor/course", instructorRoute);
 
 //listening server
 app.listen(PORT, () => {

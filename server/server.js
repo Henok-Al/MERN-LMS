@@ -3,6 +3,7 @@ import express from "express";
 import connectDB from "./database/db.js";
 import authRoute from "./routes/instructor-routes/course-route.js";
 import instructorRoute from "./routes/instructor-routes/course-route.js";
+import mediaRoutes from "./routes/instructor-routes/media-routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,6 +13,7 @@ connectDB();
 
 app.use(express.json());
 app.use("/auth", authRoute);
+app.use("/media", mediaRoutes);
 app.use("/instructor/course", instructorRoute);
 
 //listening server

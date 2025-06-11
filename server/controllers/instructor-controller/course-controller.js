@@ -1,3 +1,5 @@
+
+
 import Course from "../../models/Course.js";
 
 export const addNewCourse = async (req, res) => {
@@ -41,14 +43,26 @@ export const getAllCourses = async (req, res) => {
 
 export const getCourseDetailsByID = async (req, res) => {
   try {
+    const { id } = req.params;
+    const courseDetail = await Course.findById(id);
+
+    if (!courseDetail) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: courseDetail,
+    });
   } catch (e) {
     console.log(e);
+    res.status(500).json({
+      success: false,
+      message: "Some error occured!",
+    });
   }
 };
 
-export const updateCourseByID = async (req, res) => {
-  try {
-  } catch (e) {
-    console.log(e);
-  }
-};

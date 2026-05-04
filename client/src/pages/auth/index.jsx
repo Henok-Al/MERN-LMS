@@ -3,11 +3,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Loader2, Eye, EyeOff, Mail, Lock, User, UserRound } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  GraduationCap,
+  Loader2,
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  UserRound,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useContext, useState } from "react";
 import { AuthContext } from "@/context/auth-context";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const signInSchema = z.object({
   email: z.string().min(1, "Email is required").email("Please enter a valid email address"),
@@ -57,7 +69,7 @@ export default function AuthPage() {
     try {
       const result = await login(data.email, data.password);
       if (result.success) {
-        navigate("/");
+        navigate("/dashboard");
       } else {
         setServerError(result.message || "Invalid credentials");
       }
@@ -93,24 +105,22 @@ export default function AuthPage() {
     signUpForm.clearErrors();
   };
 
-  const inputClass =
-    "flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
-  const errorClass = "text-sm text-destructive mt-1";
-  const labelClass = "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block";
-
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="px-4 lg:px-6 h-14 flex items-center border-b bg-card">
+    <div className="flex flex-col min-h-screen">
+      <header className="px-4 lg:px-6 h-14 flex items-center border-b bg-background/80 backdrop-blur-sm">
         <Link to={"/"} className="flex items-center justify-center">
           <GraduationCap className="h-8 w-8 mr-3 text-primary" />
-          <span className="font-extrabold text-xl tracking-tight">LMS LEARN</span>
+          <span className="font-extrabold text-xl tracking-tight">LMS</span>
         </Link>
+        <div className="ml-auto flex items-center gap-2">
+          <ThemeToggle />
+        </div>
       </header>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Welcome</h1>
             <p className="text-muted-foreground mt-2 text-sm">
               Sign in to your account or create a new one
             </p>
@@ -135,31 +145,33 @@ export default function AuthPage() {
                 )}
 
                 <form onSubmit={signInForm.handleSubmit(onSignIn)} className="space-y-4">
-                  <div>
-                    <label className={labelClass}>Email</label>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <input
+                      <Input
+                        id="email"
                         {...signInForm.register("email")}
                         type="email"
                         placeholder="you@example.com"
-                        className={`${inputClass} pl-10`}
+                        className="pl-10"
                       />
                     </div>
                     {signInForm.formState.errors.email && (
-                      <p className={errorClass}>{signInForm.formState.errors.email.message}</p>
+                      <p className="text-sm text-destructive">{signInForm.formState.errors.email.message}</p>
                     )}
                   </div>
 
-                  <div>
-                    <label className={labelClass}>Password</label>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <input
+                      <Input
+                        id="password"
                         {...signInForm.register("password")}
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
-                        className={`${inputClass} pl-10 pr-10`}
+                        className="pl-10 pr-10"
                       />
                       <button
                         type="button"
@@ -170,7 +182,7 @@ export default function AuthPage() {
                       </button>
                     </div>
                     {signInForm.formState.errors.password && (
-                      <p className={errorClass}>{signInForm.formState.errors.password.message}</p>
+                      <p className="text-sm text-destructive">{signInForm.formState.errors.password.message}</p>
                     )}
                   </div>
 
@@ -197,47 +209,50 @@ export default function AuthPage() {
                 )}
 
                 <form onSubmit={signUpForm.handleSubmit(onSignUp)} className="space-y-4">
-                  <div>
-                    <label className={labelClass}>Username</label>
+                  <div className="space-y-2">
+                    <Label htmlFor="userName">Username</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <input
+                      <Input
+                        id="userName"
                         {...signUpForm.register("userName")}
                         type="text"
                         placeholder="johndoe"
-                        className={`${inputClass} pl-10`}
+                        className="pl-10"
                       />
                     </div>
                     {signUpForm.formState.errors.userName && (
-                      <p className={errorClass}>{signUpForm.formState.errors.userName.message}</p>
+                      <p className="text-sm text-destructive">{signUpForm.formState.errors.userName.message}</p>
                     )}
                   </div>
 
-                  <div>
-                    <label className={labelClass}>Email</label>
+                  <div className="space-y-2">
+                    <Label htmlFor="userEmail">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <input
+                      <Input
+                        id="userEmail"
                         {...signUpForm.register("userEmail")}
                         type="email"
                         placeholder="you@example.com"
-                        className={`${inputClass} pl-10`}
+                        className="pl-10"
                       />
                     </div>
                     {signUpForm.formState.errors.userEmail && (
-                      <p className={errorClass}>{signUpForm.formState.errors.userEmail.message}</p>
+                      <p className="text-sm text-destructive">{signUpForm.formState.errors.userEmail.message}</p>
                     )}
                   </div>
 
-                  <div>
-                    <label className={labelClass}>Password</label>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <input
+                      <Input
+                        id="signup-password"
                         {...signUpForm.register("password")}
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
-                        className={`${inputClass} pl-10 pr-10`}
+                        className="pl-10 pr-10"
                       />
                       <button
                         type="button"
@@ -248,19 +263,20 @@ export default function AuthPage() {
                       </button>
                     </div>
                     {signUpForm.formState.errors.password && (
-                      <p className={errorClass}>{signUpForm.formState.errors.password.message}</p>
+                      <p className="text-sm text-destructive">{signUpForm.formState.errors.password.message}</p>
                     )}
                   </div>
 
-                  <div>
-                    <label className={labelClass}>Confirm Password</label>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <input
+                      <Input
+                        id="confirmPassword"
                         {...signUpForm.register("confirmPassword")}
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="••••••••"
-                        className={`${inputClass} pl-10 pr-10`}
+                        className="pl-10 pr-10"
                       />
                       <button
                         type="button"
@@ -271,12 +287,12 @@ export default function AuthPage() {
                       </button>
                     </div>
                     {signUpForm.formState.errors.confirmPassword && (
-                      <p className={errorClass}>{signUpForm.formState.errors.confirmPassword.message}</p>
+                      <p className="text-sm text-destructive">{signUpForm.formState.errors.confirmPassword.message}</p>
                     )}
                   </div>
 
-                  <div>
-                    <label className={labelClass}>I want to</label>
+                  <div className="space-y-2">
+                    <Label>I want to</Label>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
@@ -304,7 +320,7 @@ export default function AuthPage() {
                       </button>
                     </div>
                     {signUpForm.formState.errors.role && (
-                      <p className={errorClass}>{signUpForm.formState.errors.role.message}</p>
+                      <p className="text-sm text-destructive">{signUpForm.formState.errors.role.message}</p>
                     )}
                   </div>
 

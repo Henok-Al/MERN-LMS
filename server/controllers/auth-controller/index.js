@@ -64,8 +64,8 @@ export const loginUser = async (req, res) => {
       userEmail: checkUser.userEmail,
       role: checkUser.role,
     },
-    "JWT_SECRET",
-    { expiresIn: "120m" }
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || "120m" }
   );
 
   res.status(200).json({

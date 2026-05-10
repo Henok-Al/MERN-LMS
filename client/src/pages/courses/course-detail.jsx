@@ -2,8 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/auth-context";
 import {
   GraduationCap,
-  LogOut,
-  User,
   ArrowRight,
   Clock,
   School,
@@ -17,13 +15,16 @@ import {
   Star,
   Loader2,
   BookOpen,
+  CreditCard,
+  MessageSquare,
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import Navbar from "@/components/navbar";
 import api from "@/lib/api";
 
 export default function CourseDetailPage() {
-  const { user, logout, isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
   const { slug } = useParams();
   const [data, setData] = useState(null);
@@ -57,8 +58,20 @@ export default function CourseDetailPage() {
     }
     setEnrolling(true);
     try {
-      await api.post("/courses/enroll", { courseId: data.course._id });
-      navigate(`/dashboard/course/${data.course._id}`);
+      const courseId = data.course._id;
+      
+      // If paid course, use Stripe checkout
+      if (data.course.pricing > 0) {
+        const res = await api.post("/payments/checkout", { courseId });
+        if (res.data.data?.url) {
+          window.location.href = res.data.data.url;
+          return;
+        }
+      }
+      
+      // Free course - enroll directly
+      await api.post("/courses/enroll", { courseId });
+      navigate(`/dashboard/course/${courseId}`);
     } catch (err) {
       if (err.response?.status === 400) {
         navigate(`/dashboard/course/${data.course._id}`);
@@ -73,11 +86,6 @@ export default function CourseDetailPage() {
       ...prev,
       [chapterId]: !prev[chapterId],
     }));
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate("/auth");
   };
 
   if (loading) {
@@ -103,57 +111,26 @@ export default function CourseDetailPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* HEADER */}
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <Link to={"/"} className="flex items-center justify-center">
-          <GraduationCap className="h-8 w-8 mr-3 text-primary" />
-          <span className="font-extrabold text-xl tracking-tight">
-            Know Thyself
-          </span>
-        </Link>
-        <nav className="ml-8 hidden md:flex items-center gap-6">
-          <Link
-            to="/courses"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Courses
-          </Link>
-          {isAuthenticated && (
+      <Navbar
+        centerLinks={
+          <>
             <Link
-              to="/dashboard"
+              to="/courses"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Dashboard
+              Courses
             </Link>
-          )}
-        </nav>
-        <div className="ml-auto flex items-center gap-4">
-          {isAuthenticated && user ? (
-            <>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span className="font-medium">{user.userName}</span>
-                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                  {user.role}
-                </span>
-              </div>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </>
-          ) : (
-            <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => navigate("/auth")}>
-                Sign In
-              </Button>
-              <Button onClick={() => navigate("/auth")}>
-                Get Started <ArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          )}
-        </div>
-      </header>
+            {isAuthenticated && (
+              <Link
+                to="/dashboard"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Dashboard
+              </Link>
+            )}
+          </>
+        }
+      />
 
       <main className="flex-1">
         {/* Course Hero */}
@@ -242,9 +219,7 @@ export default function CourseDetailPage() {
               {course.description && (
                 <section>
                   <h2 className="text-2xl font-bold mb-4">About This Course</h2>
-                  <div className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                    {course.description}
-                  </div>
+                  <div className="text-muted-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: course.description }} />
                 </section>
               )}
 
@@ -254,9 +229,7 @@ export default function CourseDetailPage() {
                   <h2 className="text-2xl font-bold mb-4">
                     What You'll Learn
                   </h2>
-                  <div className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                    {course.objectives}
-                  </div>
+                  <div className="text-muted-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: course.objectives }} />
                 </section>
               )}
 
@@ -405,10 +378,10 @@ export default function CourseDetailPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <GraduationCap className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">Know Thyself</span>
+              <span className="font-bold text-lg">Skillio</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} Know Thyself LMS. All rights
+              &copy; {new Date().getFullYear()} Skillio. All rights
               reserved.
             </p>
           </div>

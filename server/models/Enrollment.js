@@ -18,6 +18,12 @@ const EnrollmentSchema = new mongoose.Schema(
       enum: ["Pending", "Active", "Cancelled"],
       default: "Active",
     },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "completed", "refunded"],
+      default: "pending",
+    },
+    stripeSessionId: { type: String },
   },
   { timestamps: true }
 );

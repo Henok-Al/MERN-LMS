@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import Navbar from "@/components/navbar";
 import api from "@/lib/api";
 
 // Dashboard Sidebar Component
@@ -32,7 +33,7 @@ function DashboardSidebar({ user, pathname }) {
       <div className="p-4 border-b">
         <Link to="/" className="flex items-center gap-2">
           <GraduationCap className="h-6 w-6 text-primary" />
-          <span className="font-bold">Know Thyself</span>
+          <span className="font-bold">Skillio</span>
         </Link>
       </div>
       <nav className="flex-1 p-4 space-y-1">
@@ -100,7 +101,7 @@ function DashboardSidebar({ user, pathname }) {
 }
 
 export default function DashboardPage() {
-  const { user, logout, isAuthenticated, isLoading } =
+  const { user, isAuthenticated, isLoading } =
     useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -152,11 +153,6 @@ export default function DashboardPage() {
 
   if (!isAuthenticated || !user) return null;
 
-  const handleLogout = () => {
-    logout();
-    navigate("/auth");
-  };
-
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar */}
@@ -173,7 +169,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <Link to="/" className="flex items-center gap-2">
                 <GraduationCap className="h-6 w-6 text-primary" />
-                <span className="font-bold">Know Thyself</span>
+                <span className="font-bold">Skillio</span>
               </Link>
               <button onClick={() => setMobileMenuOpen(false)}>
                 <X className="h-5 w-5" />
@@ -187,31 +183,7 @@ export default function DashboardPage() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Top header */}
-        <header className="h-16 border-b flex items-center px-4 lg:px-6 gap-4 bg-background/80 backdrop-blur-sm sticky top-0 z-40">
-          <button
-            className="lg:hidden"
-            onClick={() => setMobileMenuOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <div className="flex-1">
-            <h1 className="text-lg font-semibold">Dashboard</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <User className="h-4 w-4" />
-              <span className="font-medium hidden sm:inline">
-                {user.userName}
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                {user.role}
-              </span>
-            </div>
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </header>
+        <Navbar title="Dashboard" onMenuToggle={() => setMobileMenuOpen(true)} />
 
         {/* Dashboard Content */}
         <div className="flex-1 p-4 lg:p-6 overflow-auto">

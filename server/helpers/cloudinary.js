@@ -28,3 +28,17 @@ export const deleteMediaFromCloudinary = async (publicId) => {
     throw new Error("failed to delete assest from cloudinary");
   }
 };
+
+export const uploadVideoToCloudinary = async (filePath) => {
+  try {
+    const result = await cloudinary.uploader.upload(filePath, {
+      resource_type: "video",
+      folder: "lms/videos",
+      chunk_size: 6000000, // 6MB chunks for large files
+    });
+    return result;
+  } catch (error) {
+    console.log("Cloudinary video upload error:", error);
+    throw new Error("Error uploading video to cloudinary");
+  }
+};

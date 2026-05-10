@@ -1,16 +1,15 @@
-import express from "express";
-import {
-  addNewCourse,
-  getAllCourses,
-  getCourseDetailsByID,
-  updateCourseByID,
-} from "../../controllers/instructor-controller/course-controller.js";
+import { Router } from "express";
+import { verifyToken, verifyRole } from "../../middleware/auth-middleware.js";
+import { getInstructorStats } from "../../controllers/instructor-controller/course-controller.js";
 
-const router = express.Router();
+const router = Router();
 
-router.post("/add", addNewCourse);
-router.get("/get", getAllCourses);
-router.get("/get/details/:id", getCourseDetailsByID);
-router.put("/update/:id", updateCourseByID);
+// Instructor stats
+router.get(
+  "/stats",
+  verifyToken,
+  verifyRole(["instructor", "admin"]),
+  getInstructorStats
+);
 
 export default router;

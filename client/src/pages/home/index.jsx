@@ -1,9 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/auth-context";
 import {
-  GraduationCap,
-  LogOut,
-  User,
   BookOpen,
   MonitorPlay,
   BarChart3,
@@ -13,10 +10,11 @@ import {
   Clock,
   School,
   Sparkles,
+  GraduationCap,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import Navbar from "@/components/navbar";
 import api from "@/lib/api";
 
 const features = [
@@ -47,7 +45,7 @@ const features = [
 ];
 
 export default function HomePage() {
-  const { user, logout, isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -66,64 +64,28 @@ export default function HomePage() {
     fetchCourses();
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/auth");
-  };
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* HEADER */}
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <Link to={"/"} className="flex items-center justify-center">
-          <GraduationCap className="h-8 w-8 mr-3 text-primary" />
-          <span className="font-extrabold text-xl tracking-tight">
-            Know Thyself
-          </span>
-        </Link>
-        <nav className="ml-8 hidden md:flex items-center gap-6">
-          <Link
-            to="/courses"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Courses
-          </Link>
-          {isAuthenticated && (
+      <Navbar
+        centerLinks={
+          <>
             <Link
-              to="/dashboard"
+              to="/courses"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Dashboard
+              Courses
             </Link>
-          )}
-        </nav>
-        <div className="ml-auto flex items-center gap-4">
-          {isAuthenticated && user ? (
-            <>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span className="font-medium">{user.userName}</span>
-                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                  {user.role}
-                </span>
-              </div>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </>
-          ) : (
-            <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => navigate("/auth")}>
-                Sign In
-              </Button>
-              <Button onClick={() => navigate("/auth")}>
-                Get Started <ArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          )}
-        </div>
-      </header>
+            {isAuthenticated && (
+              <Link
+                to="/dashboard"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Dashboard
+              </Link>
+            )}
+          </>
+        }
+      />
 
       <main className="flex-1">
         {/* HERO SECTION */}
@@ -169,7 +131,7 @@ export default function HomePage() {
           <div className="container max-w-6xl mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-                Why Choose Know Thyself?
+                Why Choose Skillio?
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 Our platform offers everything you need to succeed in your
@@ -325,10 +287,10 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <GraduationCap className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">Know Thyself</span>
+              <span className="font-bold text-lg">Skillio</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} Know Thyself LMS. All rights
+              &copy; {new Date().getFullYear()} Skillio. All rights
               reserved.
             </p>
           </div>

@@ -31,6 +31,16 @@ const CourseSchema = new mongoose.Schema(
       enum: ["Draft", "Published", "Archived"],
       default: "Draft",
     },
+    videos: [
+      {
+        title: { type: String, required: true },
+        description: { type: String },
+        url: { type: String, required: true },
+        duration: { type: Number, default: 0 }, // in seconds
+        order: { type: Number, default: 0 },
+        uploadedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

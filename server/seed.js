@@ -26,6 +26,15 @@ const seed = async () => {
     // ── SEED USERS ──
     const password = await bcrypt.hash("password123", 10);
 
+    const admin = await User.create({
+      userName: "admin",
+      userEmail: "admin@example.com",
+      password,
+      role: "admin",
+    });
+
+    console.log("👑 Created admin user");
+
     const instructor1 = await User.create({
       userName: "john_instructor",
       userEmail: "instructor@example.com",
@@ -54,7 +63,7 @@ const seed = async () => {
       role: "student",
     });
 
-    console.log("👤 Created 4 users (2 instructors, 2 students)");
+    console.log("👤 Created 5 users (1 admin, 2 instructors, 2 students)");
     console.log("   Login: instructor@example.com / password123");
     console.log("   Login: student@example.com / password123");
 
@@ -593,16 +602,17 @@ const seed = async () => {
     console.log("\n═══════════════════════════════════════");
     console.log("  🌱 SEED COMPLETE!");
     console.log("═══════════════════════════════════════");
-    console.log(`  Users:        4 (2 instructors, 2 students)`);
+    console.log(`  Users:        5 (1 admin, 2 instructors, 2 students)`);
     console.log(`  Courses:      6 (4 published, 2 drafts)`);
     console.log(`  Chapters:     14`);
     console.log(`  Lessons:      28`);
     console.log(`  Enrollments:  5`);
     console.log(`  Progress:     5 completed lessons`);
     console.log("═══════════════════════════════════════");
-    console.log("\n📧 Test Accounts:");
-    console.log("   Instructor: instructor@example.com / password123");
-    console.log("   Student:    student@example.com / password123");
+  console.log("\n📧 Test Accounts:");
+  console.log("   Admin:      admin@example.com / password123");
+  console.log("   Instructor: instructor@example.com / password123");
+  console.log("   Student:    student@example.com / password123");
 
     process.exit(0);
   } catch (error) {

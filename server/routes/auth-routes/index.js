@@ -1,23 +1,35 @@
-import express from "express";
+import { Router } from "express";
 import {
   registerUser,
   loginUser,
+  checkAuth,
+  forgotPassword,
+  resetPassword,
+  googleAuth,
 } from "../../controllers/auth-controller/index.js";
-import authenticateMiddleware from "../../middleware/auth-middleware.js";
+import {
+  getProfile,
+  getProfileStats,
+  updateProfile,
+  changePassword,
+  deleteAccount,
+} from "../../controllers/profile-controller/index.js";
+import { verifyToken } from "../../middleware/auth-middleware.js";
 
-const router = express.Router();
+const router = Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.get("/check-auth", authenticateMiddleware, (req, res) => {
-  const user = req.user;
-  res.status(200).json({
-    success: true,
-    message: "Authenticated user",
-    data: {
-      user,
-    },
-  });
-});
+router.get("/check-auth", verifyToken, checkAuth);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
+router.post("/google", googleAuth);
+
+// Profile routes
+router.get("/profile", verifyToken, getProfile);
+router.get("/profile/stats", verifyToken, getProfileStats);
+router.put("/profile", verifyToken, updateProfile);
+router.put("/profile/password", verifyToken, changePassword);
+router.delete("/profile", verifyToken, deleteAccount);
 
 export default router;

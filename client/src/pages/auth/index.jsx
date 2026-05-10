@@ -110,7 +110,7 @@ export default function AuthPage() {
       <header className="px-4 lg:px-6 h-14 flex items-center border-b bg-background/80 backdrop-blur-sm">
         <Link to={"/"} className="flex items-center justify-center">
           <GraduationCap className="h-8 w-8 mr-3 text-primary" />
-          <span className="font-extrabold text-xl tracking-tight">LMS</span>
+          <span className="font-extrabold text-xl tracking-tight">Skillio</span>
         </Link>
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle />
@@ -186,6 +186,11 @@ export default function AuthPage() {
                     )}
                   </div>
 
+                  <div className="flex items-center justify-end">
+                    <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                      Forgot password?
+                    </Link>
+                  </div>
                   <Button type="submit" className="w-full" disabled={signInForm.formState.isSubmitting}>
                     {signInForm.formState.isSubmitting ? (
                       <>

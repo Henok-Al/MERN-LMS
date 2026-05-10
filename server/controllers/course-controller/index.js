@@ -3,6 +3,13 @@ import Chapter from "../../models/Chapter.js";
 import Enrollment from "../../models/Enrollment.js";
 import LessonProgress from "../../models/LessonProgress.js";
 import slugify from "slugify";
+import { uploadVideoToCloudinary } from "../../helpers/cloudinary.js";
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Get all published courses (public)
 export const getAllCourses = async (req, res) => {
@@ -51,7 +58,7 @@ export const getCourseSidebarData = async (req, res) => {
 
     // Get user's lesson progress
     const progress = await LessonProgress.find({
-      userId: req.user.id,
+      userId: req.user._id,
       courseId,
     });
 
@@ -79,7 +86,7 @@ export const getCourseSidebarData = async (req, res) => {
 export const getEnrolledCourses = async (req, res) => {
   try {
     const enrollments = await Enrollment.find({
-      userId: req.user.id,
+      userId: req.user._id,
       status: "Active",
     }).populate("courseId");
 
@@ -92,7 +99,7 @@ export const getEnrolledCourses = async (req, res) => {
           0
         );
         const completedLessons = await LessonProgress.countDocuments({
-          userId: req.user.id,
+          userId: req.user._id,
           courseId: course._id,
           completed: true,
         });
@@ -120,7 +127,7 @@ export const enrollCourse = async (req, res) => {
     const { courseId } = req.body;
 
     const existingEnrollment = await Enrollment.findOne({
-      userId: req.user.id,
+      userId: req.user._id,
       courseId,
     });
 
@@ -139,10 +146,11 @@ export const enrollCourse = async (req, res) => {
     }
 
     const enrollment = await Enrollment.create({
-      userId: req.user.id,
+      userId: req.user._id,
       courseId,
       amount: course.pricing,
       status: "Active",
+      paymentStatus: course.pricing > 0 ? "pending" : "completed",
     });
 
     res.status(201).json({ success: true, data: enrollment });
@@ -157,7 +165,7 @@ export const updateLessonProgress = async (req, res) => {
     const { lessonId, courseId, completed } = req.body;
 
     const existing = await LessonProgress.findOne({
-      userId: req.user.id,
+      userId: req.user._id,
       lessonId,
     });
 
@@ -166,7 +174,7 @@ export const updateLessonProgress = async (req, res) => {
       await existing.save();
     } else {
       await LessonProgress.create({
-        userId: req.user.id,
+        userId: req.user._id,
         lessonId,
         courseId,
         completed,
@@ -197,7 +205,7 @@ export const createCourse = async (req, res) => {
     const course = await Course.create({
       ...req.body,
       slug,
-      instructorId: req.user.id,
+      instructorId: req.user._id,
       instructorName: req.user.userName,
       status: "Draft",
     });
@@ -228,9 +236,19 @@ export const updateCourse = async (req, res) => {
 // Instructor: Get my courses
 export const getMyCourses = async (req, res) => {
   try {
-    const courses = await Course.find({ instructorId: req.user.id }).sort({
+    const courses = await Course.find({ instructorId: req.user._id }).sort({
       createdAt: -1,
     });
+    res.status(200).json({ success: true, data: courses });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Admin: Get all courses
+export const getAllCoursesAdmin = async (req, res) => {
+  try {
+    const courses = await Course.find({}).sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: courses });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -262,6 +280,135 @@ export const deleteCourse = async (req, res) => {
     res
       .status(200)
       .json({ success: true, message: "Course deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Instructor/Admin: Upload video to course
+export const uploadVideo = async (req, res) => {
+  try {
+    const courseId = req.params.courseId;
+    const { title, description, order = 0 } = req.body;
+
+    // Check if file exists
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No video file uploaded",
+      });
+    }
+
+    // Validate course exists and user is instructor/admin
+    const course = await Course.findById(courseId);
+    if (!course) {
+      // Clean up temp file
+      await fs.unlink(req.file.path);
+      return res.status(404).json({ success: false, message: "Course not found" });
+    }
+
+    if (
+      course.instructorId.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
+      await fs.unlink(req.file.path);
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to upload videos to this course",
+      });
+    }
+
+    // Upload to Cloudinary
+    const cloudinaryResult = await uploadVideoToCloudinary(req.file.path);
+
+    // Create video object
+    const video = {
+      title,
+      description: description || "",
+      url: cloudinaryResult.secure_url,
+      duration: 0, // Will be updated later with actual video duration
+      order: parseInt(order) || course.videos?.length || 0,
+      uploadedAt: new Date(),
+    };
+
+    // Add to course videos array
+    course.videos = course.videos || [];
+    course.videos.push(video);
+    await course.save();
+
+    // Clean up temp file
+    await fs.unlink(req.file.path);
+
+    res.status(201).json({
+      success: true,
+      data: video,
+      message: "Video uploaded successfully",
+    });
+  } catch (error) {
+    // Clean up temp file if exists
+    if (req.file && req.file.path) {
+      try {
+        await fs.unlink(req.file.path);
+      } catch (e) {
+        // ignore cleanup error
+      }
+    }
+
+    console.error("Video upload error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to upload video",
+    });
+  }
+};
+
+// Get all videos for a course
+export const getCourseVideos = async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.courseId);
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found" });
+    }
+
+    res.status(200).json({ success: true, data: course.videos || [] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Delete video from course
+export const deleteVideo = async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const course = await Course.findById(req.params.courseId);
+
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found" });
+    }
+
+    // Check authorization
+    if (
+      course.instructorId.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete videos from this course",
+      });
+    }
+
+    // Find and remove video
+    const videoIndex = course.videos.findIndex((v) => v._id.toString() === videoId);
+    if (videoIndex === -1) {
+      return res.status(404).json({ success: false, message: "Video not found" });
+    }
+
+    // Note: Cloudinary deletion would require public_id from URL
+    // For now, we just remove from DB
+    course.videos.splice(videoIndex, 1);
+    await course.save();
+
+    res.status(200).json({ success: true, message: "Video deleted successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

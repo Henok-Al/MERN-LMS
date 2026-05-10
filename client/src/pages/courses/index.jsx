@@ -11,9 +11,21 @@ import {
   Search,
   Filter,
   Loader2,
+  ChevronDown,
+  BookOpen,
+  LayoutDashboard,
+  Settings,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import api from "@/lib/api";
 
 export default function CoursesPage() {
@@ -50,6 +62,16 @@ export default function CoursesPage() {
     return matchesSearch && matchesLevel;
   });
 
+  function getInitials(name) {
+    if (!name) return "?";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  }
+
   const handleLogout = () => {
     logout();
     navigate("/auth");
@@ -62,7 +84,7 @@ export default function CoursesPage() {
         <Link to={"/"} className="flex items-center justify-center">
           <GraduationCap className="h-8 w-8 mr-3 text-primary" />
           <span className="font-extrabold text-xl tracking-tight">
-            Know Thyself
+            Skillio
           </span>
         </Link>
         <nav className="ml-8 hidden md:flex items-center gap-6">
@@ -83,19 +105,69 @@ export default function CoursesPage() {
         </nav>
         <div className="ml-auto flex items-center gap-4">
           {isAuthenticated && user ? (
-            <>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span className="font-medium">{user.userName}</span>
-                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                  {user.role}
-                </span>
-              </div>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-2 px-2 py-1 h-auto hover:bg-accent rounded-full"
+                >
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={user.avatar} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                      {getInitials(user.userName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden sm:block text-left">
+                    <p className="text-sm font-medium leading-tight">
+                      {user.userName}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground capitalize leading-tight">
+                      {user.role}
+                    </p>
+                  </div>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-2 py-1.5">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={user.avatar} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                        {getInitials(user.userName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{user.userName}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user.userEmail}</p>
+                    </div>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  My Courses
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/profile")}>
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/profile")}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <div className="flex gap-2">
               <Button variant="ghost" onClick={() => navigate("/auth")}>
@@ -232,10 +304,10 @@ export default function CoursesPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <GraduationCap className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">Know Thyself</span>
+              <span className="font-bold text-lg">Skillio</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} Know Thyself LMS. All rights
+              &copy; {new Date().getFullYear()} Skillio. All rights
               reserved.
             </p>
           </div>

@@ -1,6 +1,9 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
+import rateLimit from "express-rate-limit";
 import connectDB from "./database/db.js";
 import authRoute from "./routes/auth-routes/index.js";
 import instructorRoute from "./routes/instructor-routes/course-route.js";
@@ -31,6 +34,22 @@ app.use(
 
 // Stripe webhook MUST be before express.json() - needs raw body
 app.post("/api/payments/webhook", express.raw({ type: "application/json" }), stripeWebhook);
+
+app.use(helmet());
+app.use(compression());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: {
+    success: false,
+    message: "Too many requests from this IP, please try again after 15 minutes"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
 
 app.use(express.json({ limit: "50mb" }));
 

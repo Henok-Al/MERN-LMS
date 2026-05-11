@@ -53,6 +53,16 @@ app.use(limiter);
 
 app.use(express.json({ limit: "50mb" }));
 
+// Health check endpoint for Railway
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "LMS API is running",
+    timestamp: new Date().toISOString(),
+    status: "healthy"
+  });
+});
+
 //routes
 app.use("/api/auth", authRoute);
 app.use("/api/media", mediaRoutes);
